@@ -1,6 +1,9 @@
 import sys
 
 
+def _print(s):
+    sys.stdout.write(f"{s}\n")
+
 def _echo(*args):
     txt = " ".join(args)
     sys.stdout.write(f"{txt}\n")
@@ -9,10 +12,19 @@ def _echo(*args):
 def _exit(*_):
     exit()
 
+def _type(*args):
+    t = args[0]
+    if t in COMMANDS:
+        _print(f"{t} is a shell builtin")
+    else:
+        _print(f"{t}: not found")
+
+
 
 COMMANDS = {
     "echo": _echo,
-    "exit": _exit
+    "exit": _exit,
+    "type": _type
 }
 
 def main():
