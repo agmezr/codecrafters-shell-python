@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 def _print(s):
     sys.stdout.write(f"{s}\n")
@@ -17,8 +18,11 @@ def _type(*args):
     if t in COMMANDS:
         _print(f"{t} is a shell builtin")
     else:
-        if not verify_command(t):
+        path = get_path(t)
+        if not path:
             _print(f"{t}: not found")
+        else:
+            _print(f"{t} is {path}")
 
 
 
@@ -28,15 +32,13 @@ COMMANDS = {
     "type": _type
 }
 
-def verify_command(cmd: str):
+def get_path(cmd: str):
     paths = os.getenv('PATH').split(os.pathsep)
     for path in paths:
         cmd_path = os.path.join(path, cmd)
         if os.access(cmd_path, os.X_OK):
-            _print(f"{cmd} is {cmd_path}")
-            return True
-
-    return False
+            return cmd_path
+    return None
 
 
 def main():
@@ -50,7 +52,12 @@ def main():
             fn = COMMANDS[cmd]
             fn(*args)
         else:
-            sys.stdout.write(f"{cmd}: command not found \n")
+            path = get_path(cmd)
+            if path:
+                res = subprocess.run([path, *args], capture_output=True, text=True)
+                _print(res.stdout)
+            else:   
+                sys.stdout.write(f"{cmd}: command not found \n")
     
 
 if __name__ == "__main__":
