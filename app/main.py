@@ -24,12 +24,16 @@ def _type(*args):
         else:
             _print(f"{t} is {path}")
 
+def _pwd(*_):
+    _print(os.getcwd())
+
 
 
 COMMANDS = {
     "echo": _echo,
     "exit": _exit,
-    "type": _type
+    "type": _type,
+    "pwd": _pwd,
 }
 
 def get_path(cmd: str):
