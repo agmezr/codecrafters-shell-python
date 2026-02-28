@@ -1,5 +1,5 @@
 import sys
-
+import os
 
 def _print(s):
     sys.stdout.write(f"{s}\n")
@@ -17,7 +17,8 @@ def _type(*args):
     if t in COMMANDS:
         _print(f"{t} is a shell builtin")
     else:
-        _print(f"{t}: not found")
+        if not verify_command(t):
+            _print(f"{t}: not found")
 
 
 
@@ -26,6 +27,17 @@ COMMANDS = {
     "exit": _exit,
     "type": _type
 }
+
+def verify_command(cmd: str):
+    paths = os.getenv('PATH').split(os.pathsep)
+    for path in paths:
+        cmd_path = os.path.join(path, cmd)
+        if os.access(cmd_path, os.X_OK):
+            _print(f"{cmd} is {cmd_path}")
+            return True
+
+    return False
+
 
 def main():
     while True:
