@@ -55,7 +55,7 @@ def main():
             path = get_path(cmd)
             if path:
                 res = subprocess.run([cmd, *args], capture_output=True, text=True)
-                _print(res.stdout)
+                _print(res.stdout.rstrip())
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     
