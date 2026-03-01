@@ -29,7 +29,10 @@ def _cd(*args):
     if p.startswith("~"):
         home = Path.home()
         p = home + p[1:]
-    os.chdir(p)
+    try:
+        os.chdir(p)
+    except:
+        _print(f"cd: {p}: No such file or directory")
 
 
 def _echo(*args):
