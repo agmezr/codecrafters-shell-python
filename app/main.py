@@ -1,14 +1,10 @@
 import sys
 import os
 import subprocess
+from pathlib import Path
 
 def _print(s):
     sys.stdout.write(f"{s}\n")
-
-def _echo(*args):
-    txt = " ".join(args)
-    sys.stdout.write(f"{txt}\n")
-
 
 def _exit(*_):
     exit()
@@ -28,13 +24,27 @@ def _pwd(*_):
     _print(os.getcwd())
 
 
+def _cd(*args):
+    p = args[0]
+    if p.startswith("~"):
+        home = Path.home()
+        p = home + p[1:]
+    os.chdir(p)
+
+
+def _echo(*args):
+    txt = " ".join(args)
+    sys.stdout.write(f"{txt}\n")
 
 COMMANDS = {
     "echo": _echo,
     "exit": _exit,
     "type": _type,
     "pwd": _pwd,
+    "cd": _cd,
 }
+
+
 
 def get_path(cmd: str):
     paths = os.getenv('PATH').split(os.pathsep)
