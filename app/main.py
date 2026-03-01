@@ -28,7 +28,7 @@ def _cd(*args):
     p = args[0]
     if p.startswith("~"):
         home = Path.home()
-        p = home + p[1:]
+        p = os.path.join(home, p[1:])
     try:
         os.chdir(p)
     except:
