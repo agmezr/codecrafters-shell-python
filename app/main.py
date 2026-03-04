@@ -64,7 +64,7 @@ COMMANDS = {
     "type": _type,
     "pwd": _pwd,
     "cd": _cd,
-    "cat": _cat,
+    #"cat": _cat,
 }
 
 
