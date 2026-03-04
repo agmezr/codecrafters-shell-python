@@ -55,7 +55,6 @@ def _cat(*args):
         with p.open() as f:
             t = f.read()
             sys.stdout.write(f"{t}")
-    sys.stdout.write(f"\n")
             
 
 
