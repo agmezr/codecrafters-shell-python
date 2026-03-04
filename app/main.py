@@ -47,14 +47,16 @@ def _cat(*args):
     txt = " ".join(args)
     tokens = utils.split_tokens(txt)
     for path in tokens:
-        print(path)
         p = Path(path)
         if not p.exists():
             _print(f"cat: {p}: No such file or directory")
         if p.is_dir():
             _print(f"cat: {p}: Is a directory")
         with p.open() as f:
-            _print(f.read())
+            t = f.read()
+            sys.stdout.write(f"{t}")
+    sys.stdout.write(f"\n")
+            
 
 
 COMMANDS = {
