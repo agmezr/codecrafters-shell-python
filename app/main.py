@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 from pathlib import Path
+import shlex
 
 from app import utils
 
@@ -39,7 +40,8 @@ def _cd(*args):
 
 def _echo(*args):
     txt = " ".join(args)
-    tokens = utils.split_tokens(txt)
+    #tokens = utils.split_tokens(txt)
+    tokens = shlex.split(txt)
     words = " ".join(tokens)
     sys.stdout.write(f"{words}\n")
 
@@ -91,7 +93,8 @@ def main():
         else:
             path = get_path(cmd)
             if path:
-                txt = utils.split_tokens(" ".join(args))
+                #txt = utils.split_tokens(" ".join(args))
+                txt = shlex.split(" ".join(args))
                 res = subprocess.run([cmd, *txt], capture_output=True, text=True)
                 sys.stdout.write(res.stdout)
             else:   
