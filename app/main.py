@@ -48,7 +48,7 @@ def _cat(*args):
     tokens = utils.split_tokens(txt)
     for path in tokens:
         print(path)
-        p = Path(path.replace("'",""))
+        p = Path(path)
         if not p.exists():
             _print(f"cat: {p}: No such file or directory")
         if p.is_dir():

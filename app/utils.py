@@ -13,11 +13,9 @@ def split_tokens(txt):
             current = symbols[letter]
             if not current:
                 symbols[letter] = True
-                word.append(letter)
 
             else:
                 symbols[letter] = False
-                word.append(letter)
                 result.append("".join(word))
                 word.clear()
         elif letter == " ":
