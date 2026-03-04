@@ -3,6 +3,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from app import utils
+
 def _print(s):
     sys.stdout.write(f"{s}\n")
 
@@ -37,7 +39,23 @@ def _cd(*args):
 
 def _echo(*args):
     txt = " ".join(args)
-    sys.stdout.write(f"{txt}\n")
+    tokens = utils.split_tokens(txt)
+    words = " ".join(tokens)
+    sys.stdout.write(f"{words}\n")
+
+def _cat(*args):
+    txt = " ".join(args)
+    tokens = utils.split_tokens(txt)
+    for path in tokens:
+        print(path)
+        p = Path(path.replace("'",""))
+        if not p.exists():
+            _print(f"cat: {p}: No such file or directory")
+        if p.is_dir():
+            _print(f"cat: {p}: Is a directory")
+        with p.open() as f:
+            _print(f.read())
+
 
 COMMANDS = {
     "echo": _echo,
@@ -45,6 +63,7 @@ COMMANDS = {
     "type": _type,
     "pwd": _pwd,
     "cd": _cd,
+    "cat": _cat,
 }
 
 
