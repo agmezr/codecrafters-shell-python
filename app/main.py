@@ -103,12 +103,12 @@ def main():
             try:
                 result = fn(*args)
                 if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
-                    utils.to_file(output, result)
+                    utils.to_file(output, result, mode)
                 else:
                     _print(result)
             except ShellException as e:
                 if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
-                    utils.to_file(output, result)
+                    utils.to_file(output, result, mode)
                 else:
                     _print(e)
 
@@ -124,7 +124,7 @@ def main():
                     if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
                         utils.to_file(output,res.stderr, mode)
                     else:
-                        sys.stdout.write(res.stderr, mode)                    
+                        sys.stdout.write(res.stderr)                    
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     
