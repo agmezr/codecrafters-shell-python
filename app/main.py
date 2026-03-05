@@ -94,29 +94,37 @@ def main():
         if mode > 0:
             output = args[-1]
             args = args[:index]
-            Path(output).touch()
+            _path = Path(output)
+            _path.parent.mkdir(parents=True, exist_ok=True)
+            _path.touch()
 
         if cmd in COMMANDS:
             fn = COMMANDS[cmd]
             try:
                 result = fn(*args)
-                if mode > 0:
+                if mode == 1:
                     utils.to_file(output, result)
                 else:
                     _print(result)
             except ShellException as e:
-                _print(e)
+                if mode == 2:
+                    utils.to_file(output, result)
+                else:
+                    _print(e)
 
         else:
             path = get_path(cmd)
             if path:
                 res = subprocess.run([cmd, *args], capture_output=True, text=True)
-                if mode > 0:
+                if mode == 1:
                     utils.to_file(output, res.stdout)
                 else:
                     _print(res.stdout.rstrip())
                 if res.stderr:
-                    sys.stdout.write(res.stderr)                    
+                    if mode == 2:
+                        utils.to_file(output,res.stderr)
+                    else:
+                        sys.stdout.write(res.stderr)                    
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     

@@ -35,6 +35,8 @@ def find_redirect(args):
     for i, arg in enumerate(args):
         if arg in ("1>", ">"):
             return 1, i
+        elif arg in ("2>"):
+            return 2, i
     return -1, -1
 
 def to_file(path, content):
