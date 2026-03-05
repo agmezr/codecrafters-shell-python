@@ -44,7 +44,7 @@ def _cd(*args):
 
 
 def _echo(*args):
-    return " ".join(args) 
+    return " ".join((*args, "\n"))
 
 def _cat(*args):
     txt = " ".join(args)
