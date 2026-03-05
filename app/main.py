@@ -44,7 +44,7 @@ def _cd(*args):
 
 
 def _echo(*args):
-    return " ".join((*args, "\n"))
+    return " ".join(args) 
 
 def _cat(*args):
     txt = " ".join(args)
@@ -103,6 +103,7 @@ def main():
             try:
                 result = fn(*args)
                 if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
+                    result += "\n"
                     utils.to_file(output, result, mode)
                 else:
                     _print(result)
