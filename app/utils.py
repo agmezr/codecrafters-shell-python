@@ -56,6 +56,6 @@ def find_redirect(args):
     return RedirectTypes.NONE, -1
 
 def to_file(path, content, rtype: RedirectTypes):
-    mode = "a+" if rtype.name == RedirectTypes.STDIN_APPEND.name else "w+"
+    mode = "a+" if rtype in (RedirectTypes.STDIN_APPEND, RedirectTypes.STDERR_APPEND) else "w+"
     with open(path, mode) as f:
         f.write(content)
