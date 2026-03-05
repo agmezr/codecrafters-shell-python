@@ -115,7 +115,7 @@ def main():
                     if mode > 0:
                         utils.to_file(output, res.stdout)
                     else:
-                        sys.stdout.write(res.stdout)
+                        _print(res.stdout.rstrip())
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     
