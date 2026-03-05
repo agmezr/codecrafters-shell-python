@@ -6,6 +6,9 @@ import shlex
 
 from app import utils
 
+class ShellException(Exception):
+    ...
+
 def _print(s):
     sys.stdout.write(f"{s}\n")
 
@@ -15,13 +18,13 @@ def _exit(*_):
 def _type(*args):
     t = args[0]
     if t in COMMANDS:
-        _print(f"{t} is a shell builtin")
+        return f"{t} is a shell builtin"
     else:
         path = get_path(t)
         if not path:
-            _print(f"{t}: not found")
+            raise ShellException(f"{t}: not found")
         else:
-            _print(f"{t} is {path}")
+            return f"{t} is {path}"
 
 def _pwd(*_):
     _print(os.getcwd())
@@ -35,15 +38,11 @@ def _cd(*args):
     try:
         os.chdir(p)
     except:
-        _print(f"cd: {p}: No such file or directory")
+        raise ShellException(f"cd: {p}: No such file or directory")
 
 
 def _echo(*args):
-    txt = " ".join(args)
-    #tokens = utils.split_tokens(txt)
-    #tokens = shlex.split(txt)
-    #words = " ".join(tokens)
-    sys.stdout.write(f"{txt}\n")
+    return " ".join(args) 
 
 def _cat(*args):
     txt = " ".join(args)
@@ -57,8 +56,6 @@ def _cat(*args):
         with p.open() as f:
             t = f.read()
             sys.stdout.write(f"{t}")
-            
-
 
 COMMANDS = {
     "echo": _echo,
@@ -86,20 +83,39 @@ def main():
         line = input()
         if not line:
             continue
-        #txt = line.split(" ")
         txt = shlex.split(line)
         cmd = txt[0]
         args = txt[1:]
+        output = None
+
+        mode, index = utils.find_redirect(args)
+        if mode > 0:
+            output = args[-1]
+            args = args[:index]
+            Path(output).touch()
+
         if cmd in COMMANDS:
             fn = COMMANDS[cmd]
-            fn(*args)
+            try:
+                result = fn(*args)
+                if mode > 0:
+                    utils.to_file(output, result)
+                else:
+                    print(result)
+            except ShellException as e:
+                _print(e)
+
         else:
             path = get_path(cmd)
             if path:
-                #txt = utils.split_tokens(" ".join(args))
-                #txt = shlex.split(" ".join(args))
                 res = subprocess.run([cmd, *args], capture_output=True, text=True)
-                sys.stdout.write(res.stdout)
+                if res.stderr:
+                    sys.stdout.write(res.stderr)
+                else:
+                    if mode > 0:
+                        utils.to_file(output, res.stdout)
+                    else:
+                        sys.stdout.write(res.stdout)
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     

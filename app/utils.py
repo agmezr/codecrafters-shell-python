@@ -28,11 +28,15 @@ def split_tokens(txt):
                 word.append(letter)
         else:
             word.append(letter)
-
-
-                
-        
-
-
-
     return result
+
+
+def find_redirect(args):
+    for i, arg in enumerate(args):
+        if arg in ("1>", ">"):
+            return 1, i
+    return -1, -1
+
+def to_file(path, content):
+    with open(path, "w+") as f:
+        f.write(content)
