@@ -10,6 +10,8 @@ class ShellException(Exception):
     ...
 
 def _print(s):
+    if not s:
+        return
     sys.stdout.write(f"{s}\n")
 
 def _exit(*_):
@@ -101,7 +103,7 @@ def main():
                 if mode > 0:
                     utils.to_file(output, result)
                 else:
-                    print(result)
+                    _print(result)
             except ShellException as e:
                 _print(e)
 
