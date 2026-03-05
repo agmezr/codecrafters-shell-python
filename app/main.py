@@ -124,7 +124,7 @@ def main():
                     if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
                         utils.to_file(output,res.stderr, mode)
                     else:
-                        sys.stdout.write(res.stderr)                    
+                        sys.stdout.write(res.stderr, mode)                    
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
     
