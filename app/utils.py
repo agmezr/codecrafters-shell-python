@@ -1,3 +1,15 @@
+from enum import Enum
+
+
+class RedirectTypes(Enum):
+    NONE=-1
+    STDIN=1
+    STDERR=2
+    STDIN_APPEND=3
+    STDERR_APPEND=4
+    
+
+
 def split_tokens(txt):
     result = []
     symbols = {
@@ -34,11 +46,16 @@ def split_tokens(txt):
 def find_redirect(args):
     for i, arg in enumerate(args):
         if arg in ("1>", ">"):
-            return 1, i
+            return RedirectTypes.STDIN, i
         elif arg in ("2>"):
-            return 2, i
-    return -1, -1
+            return RedirectTypes.STDERR, i
+        elif arg in ("1>>", ">>"):
+            return RedirectTypes.STDIN_APPEND, i
+        elif arg in ("2>>"):
+            return RedirectTypes.STDERR_APPEND, i
+    return RedirectTypes.NONE, -1
 
-def to_file(path, content):
-    with open(path, "w+") as f:
+def to_file(path, content, rtype: RedirectTypes):
+    mode = "a+" if rtype.name == RedirectTypes.STDIN_APPEND.name else "w+"
+    with open(path, mode) as f:
         f.write(content)

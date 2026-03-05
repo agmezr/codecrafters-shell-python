@@ -91,7 +91,7 @@ def main():
         output = None
 
         mode, index = utils.find_redirect(args)
-        if mode > 0:
+        if mode != utils.RedirectTypes.NONE:
             output = args[-1]
             args = args[:index]
             _path = Path(output)
@@ -102,12 +102,12 @@ def main():
             fn = COMMANDS[cmd]
             try:
                 result = fn(*args)
-                if mode == 1:
+                if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
                     utils.to_file(output, result)
                 else:
                     _print(result)
             except ShellException as e:
-                if mode == 2:
+                if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
                     utils.to_file(output, result)
                 else:
                     _print(e)
@@ -116,13 +116,13 @@ def main():
             path = get_path(cmd)
             if path:
                 res = subprocess.run([cmd, *args], capture_output=True, text=True)
-                if mode == 1:
-                    utils.to_file(output, res.stdout)
+                if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
+                    utils.to_file(output, res.stdout, mode)
                 else:
                     _print(res.stdout.rstrip())
                 if res.stderr:
-                    if mode == 2:
-                        utils.to_file(output,res.stderr)
+                    if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
+                        utils.to_file(output,res.stderr, mode)
                     else:
                         sys.stdout.write(res.stderr)                    
             else:   
