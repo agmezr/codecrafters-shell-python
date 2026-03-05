@@ -59,3 +59,5 @@ def to_file(path, content, rtype: RedirectTypes):
     mode = "a+" if rtype.name == RedirectTypes.STDIN_APPEND.name else "w+"
     with open(path, mode) as f:
         f.write(content)
+        if mode == "a+":
+            f.write("\n")
