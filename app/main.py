@@ -3,6 +3,7 @@ import os
 import subprocess
 from pathlib import Path
 import shlex
+import readline
 
 from app import utils
 
@@ -128,7 +129,19 @@ def main():
                         sys.stdout.write(res.stderr)                    
             else:   
                 sys.stdout.write(f"{cmd}: command not found \n")
-    
+
+
+def completer(text, state):
+    options = [cmd for cmd in COMMANDS.keys() if cmd.startswith(text)]
+    return options[state] if state < len(options) else None
+
 
 if __name__ == "__main__":
+    readline.set_completer(completer)
+    if 'libedit' in readline.__doc__:
+        readline.parse_and_bind("bind ^I rl_complete")
+    else:
+        readline.parse_and_bind("tab: complete")
+
     main()
+
