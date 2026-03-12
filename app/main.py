@@ -69,6 +69,8 @@ COMMANDS = {
     #"cat": _cat,
 }
 
+PATH_COMMANDS = [key + " " for key in COMMANDS.keys()]
+
 
 
 def get_path(cmd: str):
@@ -78,6 +80,14 @@ def get_path(cmd: str):
         if os.access(cmd_path, os.X_OK):
             return cmd_path
     return None
+
+def build_path_commands():
+    paths = os.getenv('PATH').split(os.pathsep)
+    for path in paths:
+        for _file in os.listdir(path):
+            full_path = os.path.join(path, _file)
+            if os.access(full_path, os.X_OK):
+                PATH_COMMANDS.append(_file + " ")
 
 
 def main():
@@ -132,12 +142,12 @@ def main():
 
 
 def completer(text, state):
-    keys = [key + " " for key in COMMANDS.keys()]
-    options = [key for key in keys if key.startswith(text)]
+    options = [key for key in PATH_COMMANDS if key.startswith(text)]
     return options[state] if state < len(options) else None
 
 
 if __name__ == "__main__":
+    build_path_commands()
     readline.set_completer(completer)
     if 'libedit' in readline.__doc__:
         readline.parse_and_bind("bind ^I rl_complete")
