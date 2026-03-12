@@ -86,7 +86,7 @@ def build_path_commands():
     for path in paths:
         for _file in os.listdir(path):
             full_path = os.path.join(path, _file)
-            if os.access(full_path, os.X_OK):
+            if os.path.isfile(full_path) and os.access(full_path, os.X_OK):
                 PATH_COMMANDS.append(_file + " ")
 
 
