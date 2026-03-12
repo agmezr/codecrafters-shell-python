@@ -147,6 +147,10 @@ def completer(text, state):
     options = [key for key in PATH_COMMANDS if key.startswith(text)]
     return options[state] if state < len(options) else None
 
+def display_hook(_, matches, __):
+    print()
+    print("  ".join(sorted(matches)))
+    sys.stdout.write("$ " + readline.get_line_buffer())
 
 if __name__ == "__main__":
     build_path_commands()
@@ -155,6 +159,8 @@ if __name__ == "__main__":
         readline.parse_and_bind("bind ^I rl_complete")
     else:
         readline.parse_and_bind("tab: complete")
+    
+    readline.set_completion_display_matches_hook(display_hook)
 
     main()
 
