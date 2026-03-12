@@ -132,7 +132,8 @@ def main():
 
 
 def completer(text, state):
-    options = [cmd for cmd in COMMANDS.keys() if cmd.startswith(text)]
+    keys = [key + " " for key in COMMANDS.keys()]
+    options = [key for key in keys if key.startswith(text)]
     return options[state] if state < len(options) else None
 
 
