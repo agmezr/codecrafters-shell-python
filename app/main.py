@@ -4,6 +4,8 @@ import subprocess
 from pathlib import Path
 import shlex
 import readline
+import argparse
+from app import cpipes
 
 from app import utils
 
@@ -91,6 +93,50 @@ def build_path_commands():
             if os.access(full_path, os.X_OK):
                 PATH_COMMANDS.append(_file + " ")
 
+def run_command(line: str):
+    txt = shlex.split(line)
+    cmd = txt[0]
+    args = txt[1:]
+    output = None
+
+    mode, index = utils.find_redirect(args)
+    if mode != utils.RedirectTypes.NONE:
+        output = args[-1]
+        args = args[:index]
+        _path = Path(output)
+        _path.parent.mkdir(parents=True, exist_ok=True)
+        _path.touch()
+
+    if cmd in COMMANDS:
+        fn = COMMANDS[cmd]
+        try:
+            result = fn(*args)
+            if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
+                result += "\n"
+                utils.to_file(output, result, mode)
+            else:
+                _print(result)
+        except ShellException as e:
+            if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
+                utils.to_file(output, result, mode)
+            else:
+                _print(e)
+
+    else:
+        path = get_path(cmd)
+        if path:
+            res = subprocess.run([cmd, *args], capture_output=True, text=True)
+            if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
+                utils.to_file(output, res.stdout, mode)
+            else:
+                _print(res.stdout.rstrip())
+            if res.stderr:
+                if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
+                    utils.to_file(output,res.stderr, mode)
+                else:
+                    sys.stdout.write(res.stderr)                    
+        else:   
+            sys.stdout.write(f"{cmd}: command not found \n")
 
 def main():
     while True:
@@ -98,49 +144,12 @@ def main():
         line = input()
         if not line:
             continue
-        txt = shlex.split(line)
-        cmd = txt[0]
-        args = txt[1:]
-        output = None
 
-        mode, index = utils.find_redirect(args)
-        if mode != utils.RedirectTypes.NONE:
-            output = args[-1]
-            args = args[:index]
-            _path = Path(output)
-            _path.parent.mkdir(parents=True, exist_ok=True)
-            _path.touch()
-
-        if cmd in COMMANDS:
-            fn = COMMANDS[cmd]
-            try:
-                result = fn(*args)
-                if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
-                    result += "\n"
-                    utils.to_file(output, result, mode)
-                else:
-                    _print(result)
-            except ShellException as e:
-                if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
-                    utils.to_file(output, result, mode)
-                else:
-                    _print(e)
-
+        if "|" in line:
+            result = cpipes.run_pipe_command(line)
+            sys.stdout.write(result.stdout)
         else:
-            path = get_path(cmd)
-            if path:
-                res = subprocess.run([cmd, *args], capture_output=True, text=True)
-                if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
-                    utils.to_file(output, res.stdout, mode)
-                else:
-                    _print(res.stdout.rstrip())
-                if res.stderr:
-                    if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
-                        utils.to_file(output,res.stderr, mode)
-                    else:
-                        sys.stdout.write(res.stderr)                    
-            else:   
-                sys.stdout.write(f"{cmd}: command not found \n")
+            run_command(line)
 
 
 def completer(text, state):
@@ -152,7 +161,7 @@ def display_hook(_, matches, __):
     print("  ".join(sorted(matches)))
     sys.stdout.write("$ " + readline.get_line_buffer())
 
-if __name__ == "__main__":
+def setup_readline():
     build_path_commands()
     readline.set_completer(completer)
     if 'libedit' in readline.__doc__:
@@ -162,5 +171,14 @@ if __name__ == "__main__":
     
     readline.set_completion_display_matches_hook(display_hook)
 
-    main()
+if __name__ == "__main__":
+    
+    setup_readline()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c")
+    args = parser.parse_args()
+    if args.c:
+        run_command(args.c)
+    else:
+        main()
 
