@@ -5,6 +5,7 @@ from pathlib import Path
 import shlex
 import readline
 import argparse
+import signal
 from app import cpipes
 
 from app import utils
@@ -124,19 +125,23 @@ def run_command(line: str):
 
     else:
         path = get_path(cmd)
-        if path:
-            res = subprocess.run([cmd, *args], capture_output=True, text=True)
-            if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
-                utils.to_file(output, res.stdout, mode)
-            else:
-                _print(res.stdout.rstrip())
-            if res.stderr:
-                if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
-                    utils.to_file(output,res.stderr, mode)
-                else:
-                    sys.stdout.write(res.stderr)                    
-        else:   
+        if not path:
             sys.stdout.write(f"{cmd}: command not found \n")
+            return
+
+        utils.run_popen(cmd, args, output, mode)
+        return
+        res = subprocess.run([cmd, *args], capture_output=True, text=True)
+        if mode in (utils.RedirectTypes.STDIN, utils.RedirectTypes.STDIN_APPEND):
+            utils.to_file(output, res.stdout, mode)
+        else:
+            _print(res.stdout.rstrip())
+            sys.stdout.flush()
+        if res.stderr:
+            if mode in (utils.RedirectTypes.STDERR, utils.RedirectTypes.STDERR_APPEND):
+                utils.to_file(output,res.stderr, mode)
+            else:
+                sys.stdout.write(res.stderr)
 
 def main():
     while True:
