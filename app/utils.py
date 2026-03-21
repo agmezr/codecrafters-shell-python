@@ -2,6 +2,7 @@ from enum import Enum
 import subprocess
 import select
 import sys
+import selectors
 
 class RedirectTypes(Enum):
     NONE=-1
@@ -63,30 +64,25 @@ def to_file(path, content, rtype: RedirectTypes):
         f.write(content)
 
 def run_popen(cmd, args, file_path, mode):
-    f = subprocess.Popen([cmd, *args],\
-                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,\
-                          text=True)
-    p = select.poll()
-    p.register(f.stdout)
-
-    if f.stderr:
-        if mode in (RedirectTypes.STDERR, RedirectTypes.STDERR_APPEND):
-                to_file(file_path , f.stderr.read(), mode)
-        else:
-            sys.stdout.write(f.stderr.read())
-        return
-    
     fm = "a+" if mode in (RedirectTypes.STDIN_APPEND, RedirectTypes.STDERR_APPEND) else "w+"
-    _file = open(file_path, fm)
-    while True:
+    out_pipe = subprocess.PIPE
+    if file_path:
+        out_pipe = open(file_path, fm)
+    p = subprocess.Popen([cmd, *args],
+                          stdout=out_pipe,
+                          stderr=subprocess.STDOUT,
+                          bufsize=1, 
+                          text=True)
+    if file_path:
         try:
-            if p.poll(1):
-                if file_path:
-                    _file.write(f.stdout.readline())
-                    _file.flush()
-                else:
-                    sys.stdout.write(f.stdout.readline())
+            p.wait() 
         except KeyboardInterrupt:
-            f.kill()
-            _file.close()
-            return
+            p.kill()
+        finally:
+            out_pipe.close()
+    else:
+        try:
+            for line in iter(p.stdout.readline, ''):
+                sys.stdout.write(line)
+        except KeyboardInterrupt:
+            p.kill()
